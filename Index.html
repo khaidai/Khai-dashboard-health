@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Khai Health">
+<title>Khai — Suivi santé</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#0c111e; --surface:#141c2e; --surface2:#1a2336; --line:#283249; --line-soft:#1f293e;
+    --ink:#eaf0fb; --ink2:#9aa7c4; --ink3:#65728f;
+    --awake:#ff6f52; --rem:#45cfe6; --light:#4a8bf2; --deep:#6a5cf0; --move:#34d399;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,system-ui,sans-serif;
+    background:radial-gradient(900px 500px at 80% -10%,rgba(74,139,242,.10),transparent 60%),var(--bg);
+    color:var(--ink);line-height:1.45;padding:20px 15px 50px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto}
+  h1,h2,.num{font-family:'Space Grotesk',sans-serif}
+  .num{font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+  header{margin-bottom:16px}
+  .eyebrow{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);font-weight:600}
+  header h1{font-size:25px;font-weight:700;letter-spacing:-.02em;margin:5px 0 9px}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;
+    padding:4px 10px;border-radius:8px}
+  .badge.ok{color:#86f0c0;background:rgba(52,211,153,.12)}
+  .badge.demo{color:#ffd27a;background:rgba(255,180,60,.12)}
+
+  .sec-tag{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);
+    font-weight:600;margin:22px 0 11px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .tile{background:var(--surface);border:1px solid var(--line-soft);border-radius:15px;padding:14px}
+  .tile .lab{font-size:11.5px;color:var(--ink2);font-weight:500;display:flex;align-items:center;gap:6px}
+  .tile .val{font-size:27px;font-weight:600;margin-top:6px;line-height:1}
+  .tile .val small{font-size:13px;color:var(--ink2);font-weight:500;margin-left:2px}
+  .tile .meta{font-size:11px;color:var(--ink3);margin-top:5px}
+  .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+
+  .card{background:var(--surface);border:1px solid var(--line-soft);border-radius:18px;padding:16px;margin-top:11px}
+  .card h2{font-size:14px;font-weight:600;margin-bottom:12px}
+  .chart-box{height:150px;position:relative}
+
+  .hero{background:linear-gradient(180deg,rgba(106,92,240,.10),transparent 70%),var(--surface);
+    border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:11px}
+  .hero .cap{font-size:12px;color:var(--ink3)}
+  .hero .big{font-size:46px;font-weight:700;letter-spacing:-.03em;line-height:.9;margin-top:4px}
+  .hero-top{display:flex;justify-content:space-between;align-items:flex-end}
+  .hero .eff{font-size:12px;color:var(--ink2);text-align:right}
+  .hero .eff b{color:var(--move);font-weight:600}
+  .stack{display:flex;height:26px;border-radius:8px;overflow:hidden;margin-top:18px;border:1px solid var(--line-soft)}
+  .stack span{height:100%}
+  .legend{display:flex;flex-wrap:wrap;gap:13px;margin-top:11px}
+  .legend div{font-size:11.5px;color:var(--ink2);display:flex;align-items:center;gap:6px}
+  .legend b{color:var(--ink);font-weight:600;font-family:'Space Grotesk';font-variant-numeric:tabular-nums}
+
+  .setup{background:var(--surface2);border:1px dashed var(--line);border-radius:14px;padding:14px;margin-top:18px;
+    font-size:12px;color:var(--ink2);line-height:1.6}
+  .setup b{color:var(--ink)}
+  .setup code{background:#0a0f1b;border:1px solid var(--line);border-radius:6px;padding:1px 6px;
+    font-family:ui-monospace,monospace;font-size:11px;color:var(--rem)}
+  .foot{font-size:11px;color:var(--ink3);margin-top:18px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+// ---- Données de démonstration (s'affichent tant que la source n'est pas branchée) ----
+const DEMO = {
+  updated: null,
+  steps_today: 8240, resting_hr: 57, vo2max: 38.5, hrv: 48,
+  steps_7d: [9200,11000,7800,10500,8240,12000,6900],
+  sleep_in_bed_min: 451, sleep_asleep_min: 403,
+  sleep_deep_min: 21, sleep_core_min: 298, sleep_rem_min: 84, sleep_awake_min: 48
+};
+
+// Source des données : ?src=URL (mémorisée), sinon démo.
+// ?key=ACCESS_KEY (optionnel, mémorisée) : clé de LECTURE SEULE envoyée en en-tête X-Access-Key.
+// Ne jamais utiliser ici une Master Key — uniquement une Access Key en lecture seule.
+function getSrc(){
+  try{
+    const u = new URLSearchParams(location.search).get('src');
+    if(u){ try{ localStorage.setItem('khai_src', u); }catch(e){} return u; }
+    try{ return localStorage.getItem('khai_src'); }catch(e){ return null; }
+  }catch(e){ return null; }
+}
+function getKey(){
+  try{
+    const k = new URLSearchParams(location.search).get('key');
+    if(k){ try{ localStorage.setItem('khai_key', k); }catch(e){} return k; }
+    try{ return localStorage.getItem('khai_key'); }catch(e){ return null; }
+  }catch(e){ return null; }
+}
+function hm(min){ const m=Math.round(min); return `${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`; }
+function ago(iso){
+  if(!iso) return null;
+  const d=(Date.now()-new Date(iso).getTime())/60000;
+  if(d<60) return `il y a ${Math.max(1,Math.round(d))} min`;
+  if(d<1440) return `il y a ${Math.round(d/60)} h`;
+  return `il y a ${Math.round(d/1440)} j`;
+}
+
+async function load(){
+  const src = getSrc();
+  const key = getKey();
+  let data = DEMO, demo = true;
+  if(src){
+    try{
+      const headers = key ? {'X-Access-Key': key} : {};
+      const r = await fetch(src, {cache:'no-store', headers});
+      if(r.ok){ let j = await r.json(); data = (j && j.record) ? j.record : j; demo = false; }
+    }catch(e){ /* on garde la démo */ }
+  }
+  render(data, demo, src);
+}
+
+function render(d, demo, src){
+  const inBed = d.sleep_in_bed_min || (d.sleep_asleep_min + d.sleep_awake_min) || 1;
+  const asleep = d.sleep_asleep_min || (d.sleep_deep_min+d.sleep_core_min+d.sleep_rem_min) || 0;
+  const eff = inBed ? Math.round(asleep/inBed*100) : 0;
+  const segs = [
+    ['Profond', d.sleep_deep_min, 'var(--deep)'],
+    ['Léger',   d.sleep_core_min, 'var(--light)'],
+    ['REM',     d.sleep_rem_min,  'var(--rem)'],
+    ['Éveil',   d.sleep_awake_min,'var(--awake)']
+  ];
+  const total = segs.reduce((s,x)=>s+(x[1]||0),0) || 1;
+
+  const updated = ago(d.updated);
+  const badge = demo
+    ? `<span class="badge demo">● données de démonstration</span>`
+    : `<span class="badge ok">↻ mis à jour ${updated||'à l\'instant'}</span>`;
+
+  document.getElementById('app').innerHTML = `
+    <header>
+      <div class="eyebrow">KHAI · MYHEALTH</div>
+      <h1>Suivi santé</h1>
+      ${badge}
+    </header>
+
+    <div class="sec-tag">Vue générale</div>
+    <div class="grid">
+      ${tile('Pas aujourd\'hui', fmt(d.steps_today), '', 'var(--move)')}
+      ${tile('FC de repos', d.resting_hr, 'bpm', 'var(--awake)')}
+      ${tile('VO₂ Max', frac(d.vo2max), '', 'var(--rem)')}
+      ${tile('HRV', d.hrv, 'ms', 'var(--deep)')}
+    </div>
+    ${(d.steps_7d && d.steps_7d.length) ? `<div class="card"><h2>Pas — 7 derniers jours</h2><div class="chart-box"><canvas id="cSteps"></canvas></div></div>` : ''}
+
+    <div class="sec-tag">Focus sommeil</div>
+    <div class="hero">
+      <div class="hero-top">
+        <div><div class="cap">Durée — dernière nuit</div><div class="big num">${hm(asleep)}</div></div>
+        <div class="eff">cible 7–9 h<br>efficacité <b>${eff} %</b></div>
+      </div>
+      <div class="stack">
+        ${segs.map(s=>`<span style="width:${(s[1]||0)/total*100}%;background:${s[2]}"></span>`).join('')}
+      </div>
+      <div class="legend">
+        ${segs.map(s=>`<div><span class="dot" style="background:${s[2]}"></span>${s[0]} <b>${hm(s[1]||0)}</b></div>`).join('')}
+      </div>
+    </div>
+
+    ${demo ? `<div class="setup"><b>Pas encore branché.</b> Une fois ta « boîte à données » créée, ouvre cette page avec <code>?src=TON_URL</code> à la fin de l'adresse (une seule fois). Elle affichera alors tes vraies données et se mettra à jour à chaque ouverture.</div>` : ''}
+
+    <div class="foot">Données issues d'Apple Santé via ton raccourci. Outil de suivi, non médical. Tire la page pour rafraîchir.</div>
+  `;
+
+  // graphe pas (seulement si la donnée 7 jours est fournie — v2)
+  const ctx = document.getElementById('cSteps');
+  if(ctx && window.Chart && d.steps_7d && d.steps_7d.length){
+    new Chart(ctx,{type:'bar',
+      data:{labels:['J-6','J-5','J-4','J-3','J-2','J-1','Auj.'],
+        datasets:[{data:d.steps_7d||[], backgroundColor:'rgba(52,211,153,.85)', borderRadius:5, maxBarThickness:30}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{x:{grid:{display:false},ticks:{color:'#65728f',font:{size:10}},border:{color:'#283249'}},
+          y:{grid:{color:'#283249'},border:{display:false},ticks:{color:'#65728f',font:{size:10}}}}}});
+  }
+}
+
+function tile(lab,val,unit,c){
+  return `<div class="tile"><div class="lab"><span class="dot" style="background:${c}"></span>${lab}</div>
+    <div class="val num">${val ?? '—'}${unit?`<small>${unit}</small>`:''}</div></div>`;
+}
+function fmt(n){ return n==null?'—':String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' '); }
+function frac(n){ return n==null?'—':String(n).replace('.',','); }
+
+load();
+</script>
+</body>
+</html>
