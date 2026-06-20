@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<!-- saved from url=(0054)file:///C:/Users/houan/Downloads/dashboard_live_1.html -->
-<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Khai Health">
 <title>Khai — Suivi santé</title>
-<link rel="preconnect" href="https://fonts.googleapis.com/">
-<link href="./Khai — Suivi santé_files/css2" rel="stylesheet">
-<script src="./Khai — Suivi santé_files/chart.umd.min.js.download"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root{
     --bg:#0c111e; --surface:#141c2e; --surface2:#1a2336; --line:#283249; --line-soft:#1f293e;
@@ -67,44 +67,7 @@
 </style>
 </head>
 <body>
-<div class="wrap" id="app">
-    <header>
-      <div class="eyebrow">KHAI · MYHEALTH</div>
-      <h1>Suivi santé</h1>
-      <span class="badge demo">● données de démonstration</span>
-    </header>
-
-    <div class="sec-tag">Vue générale</div>
-    <div class="grid">
-      <div class="tile"><div class="lab"><span class="dot" style="background:var(--move)"></span>Pas aujourd'hui</div>
-    <div class="val num">8 240</div></div>
-      <div class="tile"><div class="lab"><span class="dot" style="background:var(--awake)"></span>FC de repos</div>
-    <div class="val num">57<small>bpm</small></div></div>
-      <div class="tile"><div class="lab"><span class="dot" style="background:var(--rem)"></span>VO₂ Max</div>
-    <div class="val num">38,5</div></div>
-      <div class="tile"><div class="lab"><span class="dot" style="background:var(--deep)"></span>HRV</div>
-    <div class="val num">48<small>ms</small></div></div>
-    </div>
-    <div class="card"><h2>Pas — 7 derniers jours</h2><div class="chart-box"><canvas id="cSteps" width="526" height="150" style="display: block; box-sizing: border-box; height: 150px; width: 526px;"></canvas></div></div>
-
-    <div class="sec-tag">Focus sommeil</div>
-    <div class="hero">
-      <div class="hero-top">
-        <div><div class="cap">Durée — dernière nuit</div><div class="big num">6 h 43</div></div>
-        <div class="eff">cible 7–9 h<br>efficacité <b>89 %</b></div>
-      </div>
-      <div class="stack">
-        <span style="width:4.656319290465632%;background:var(--deep)"></span><span style="width:66.07538802660754%;background:var(--light)"></span><span style="width:18.625277161862527%;background:var(--rem)"></span><span style="width:10.643015521064301%;background:var(--awake)"></span>
-      </div>
-      <div class="legend">
-        <div><span class="dot" style="background:var(--deep)"></span>Profond <b>0 h 21</b></div><div><span class="dot" style="background:var(--light)"></span>Léger <b>4 h 58</b></div><div><span class="dot" style="background:var(--rem)"></span>REM <b>1 h 24</b></div><div><span class="dot" style="background:var(--awake)"></span>Éveil <b>0 h 48</b></div>
-      </div>
-    </div>
-
-    <div class="setup"><b>Pas encore branché.</b> Une fois ta « boîte à données » créée, ouvre cette page avec <code>?src=TON_URL</code> à la fin de l'adresse (une seule fois). Elle affichera alors tes vraies données et se mettra à jour à chaque ouverture.</div>
-
-    <div class="foot">Données issues d'Apple Santé via ton raccourci. Outil de suivi, non médical. Tire la page pour rafraîchir.</div>
-  </div>
+<div class="wrap" id="app"></div>
 
 <script>
 // ---- Données de démonstration (s'affichent tant que la source n'est pas branchée) ----
@@ -235,6 +198,5 @@ function frac(n){ return n==null?'—':String(n).replace('.',','); }
 
 load();
 </script>
-
-
-</body></html>
+</body>
+</html>
