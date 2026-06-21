@@ -120,8 +120,19 @@ async function load(){
 }
 
 function render(d, demo, src){
-  const inBed = d.sleep_in_bed_min || (d.sleep_asleep_min + d.sleep_awake_min) || 1;
+  // Le Shortcut envoie le sommeil en secondes (sleep_*_sec) : on convertit en minutes
+  // pour réutiliser la même logique d'affichage que le schéma précédent.
+  if (d.sleep_core_sec !== undefined || d.sleep_deep_sec !== undefined ||
+      d.sleep_rem_sec !== undefined || d.sleep_awake_sec !== undefined) {
+    d = Object.assign({}, d, {
+      sleep_deep_min:  (d.sleep_deep_sec  || 0) / 60,
+      sleep_core_min:  (d.sleep_core_sec  || 0) / 60,
+      sleep_rem_min:   (d.sleep_rem_sec   || 0) / 60,
+      sleep_awake_min: (d.sleep_awake_sec || 0) / 60
+    });
+  }
   const asleep = d.sleep_asleep_min || (d.sleep_deep_min+d.sleep_core_min+d.sleep_rem_min) || 0;
+  const inBed = d.sleep_in_bed_min || (asleep + (d.sleep_awake_min||0)) || 1;
   const eff = inBed ? Math.round(asleep/inBed*100) : 0;
 
   // Détail des phases fourni (v2) ? Sinon, vue simplifiée endormi/éveil (v1).
