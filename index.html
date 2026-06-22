@@ -97,9 +97,19 @@ function getKey(){
   }catch(e){ return null; }
 }
 function hm(min){ const m=Math.round(min); return `${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`; }
-function ago(iso){
-  if(!iso) return null;
-  const d=(Date.now()-new Date(iso).getTime())/60000;
+function parseDate(str){
+  if(!str) return null;
+  let d=new Date(str); if(!isNaN(d)) return d;
+  const mo={jan:0,mars:2,avr:3,mai:4,juin:5,juil:6,oct:9,nov:10};
+  mo['f\u00e9v']=1; mo['ao\u00fbt']=7; mo['sept']=8; mo['d\u00e9c']=11;
+  const m=str.match(/(\d{1,2})\s+(\S+)\s+(\d{4})(?:\s+.\s+(\d{1,2}):(\d{2}))?/);
+  if(m){const mn=mo[m[2].toLowerCase()];if(mn!==undefined)return new Date(+m[3],mn,+m[1],+(m[4]||0),+(m[5]||0));}
+  return null;
+}
+function ago(str){
+  if(!str) return null;
+  const dt=parseDate(str); if(!dt||isNaN(dt)) return null;
+  const d=(Date.now()-dt.getTime())/60000;
   if(d<60) return `il y a ${Math.max(1,Math.round(d))} min`;
   if(d<1440) return `il y a ${Math.round(d/60)} h`;
   return `il y a ${Math.round(d/1440)} j`;
@@ -164,8 +174,8 @@ function render(d, demo, src){
     <div class="grid">
       ${tile('Pas aujourd\'hui', fmt(d.steps_today), '', 'var(--move)')}
       ${tile('FC de repos', d.resting_hr, 'bpm', 'var(--awake)')}
-      ${tile('VO₂ Max', frac(d.vo2max), '', 'var(--rem)')}
-      ${tile('HRV', d.hrv, 'ms', 'var(--deep)')}
+      ${tile('Fréq. resp.', d.respiratory_rate != null ? Math.round(d.respiratory_rate) : null, '/min', 'var(--rem)')}
+      ${tile('HRV', d.hrv != null ? Math.round(d.hrv) : null, 'ms', 'var(--deep)')}
     </div>
     ${(d.steps_7d && d.steps_7d.length) ? `<div class="card"><h2>Pas — 7 derniers jours</h2><div class="chart-box"><canvas id="cSteps"></canvas></div></div>` : ''}
 
