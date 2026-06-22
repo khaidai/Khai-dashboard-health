@@ -158,6 +158,14 @@ function render(d, demo, src){
   ];
   const total = segs.reduce((s,x)=>s+(x[1]||0),0) || 1;
 
+  // Extraire l'heure de coucher depuis "22/06/2026 01:47" ou "01:47"
+  function extractTime(str){
+    if(!str) return null;
+    const m = str.match(/(\d{1,2}:\d{2})$/);
+    return m ? m[1] : null;
+  }
+  const bedtime = extractTime(d.sleep_bedtime);
+
   const updated = ago(d.updated);
   const badge = demo
     ? `<span class="badge demo">● données de démonstration</span>`
@@ -176,6 +184,7 @@ function render(d, demo, src){
       ${tile('FC de repos', d.resting_hr, 'bpm', 'var(--awake)')}
       ${tile('Fréq. resp.', d.respiratory_rate != null ? Math.round(d.respiratory_rate) : null, '/min', 'var(--rem)')}
       ${tile('HRV', d.hrv != null ? Math.round(d.hrv) : null, 'ms', 'var(--deep)')}
+      ${d.active_energy != null ? tile('Énergie active', fmt(Math.round(d.active_energy)), 'kcal', 'var(--move)') : ''}
     </div>
     ${(d.steps_7d && d.steps_7d.length) ? `<div class="card"><h2>Pas — 7 derniers jours</h2><div class="chart-box"><canvas id="cSteps"></canvas></div></div>` : ''}
 
@@ -183,7 +192,7 @@ function render(d, demo, src){
     <div class="hero">
       <div class="hero-top">
         <div><div class="cap">Durée — dernière nuit</div><div class="big num">${hm(asleep)}</div></div>
-        <div class="eff">cible 7–9 h<br>efficacité <b>${eff} %</b></div>
+        <div class="eff">${bedtime ? `<span style="font-size:12px;color:var(--ink2)">coucher</span><br><b style="font-size:18px;color:var(--ink)">${bedtime}</b><br>` : ''}cible 7–9 h<br>efficacité <b>${eff} %</b></div>
       </div>
       <div class="stack">
         ${segs.map(s=>`<span style="width:${(s[1]||0)/total*100}%;background:${s[2]}"></span>`).join('')}
